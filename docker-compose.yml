@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  s4c-trajectory-app:
+    build: .
+    ports:
+      - "3000:80"
+    restart: always
+    container_name: s4c-trajectory-monitoring
+    volumes:
+      - ./data.csv:/usr/share/nginx/html/data.csv:ro
