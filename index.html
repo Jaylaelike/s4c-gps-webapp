@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S₄C Satellite Monitoring System</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>S₄c Map</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,13 +15,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body class="bg-gray-50">
     <div id="map"></div>
 
     <!-- Satellite Monitor Toggle Button -->
     <div id="satellite-toggle-btn" class="satellite-toggle glass-panel">
         <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z">
+            </path>
         </svg>
     </div>
 
@@ -26,13 +33,14 @@
         <div class="flex items-center justify-between mb-3">
             <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                 </svg>
                 Satellite Monitor
             </h2>
             <button id="close-satellite-btn" class="text-gray-500 hover:text-gray-700 text-xl font-bold">×</button>
         </div>
-        
+
         <!-- Satellite Count Display -->
         <div class="mb-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
             <h3 class="font-semibold text-sm mb-2 text-blue-800">Active Satellites</h3>
@@ -56,6 +64,25 @@
             </div>
         </div>
 
+        <!-- Station Filter -->
+        <div class="mb-3">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="font-semibold text-sm text-gray-800">Station Filter</h3>
+                <button id="refresh-data-btn"
+                    class="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                    title="Refresh data now">
+                    🔄 Refresh
+                </button>
+            </div>
+            <select id="station-selector"
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                <option value="all">All Stations</option>
+            </select>
+            <div id="last-update" class="text-xs text-gray-500 mt-1 text-center">
+                Auto-refresh: 30s
+            </div>
+        </div>
+
         <!-- S4C Level Filter -->
         <div class="mb-2">
             <h3 class="font-semibold text-sm mb-2 text-gray-800">S4C Filter</h3>
@@ -75,31 +102,6 @@
                     <span class="w-3 h-3 rounded-full mr-2 bg-red-500"></span>
                     <span class="text-xs font-medium">High (> 0.4)</span>
                 </label>
-            </div>
-        </div>
-    </div>
-
-    <!-- Critical Alerts Panel -->
-    <div id="alert-panel" class="alert-panel glass-panel hidden">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                </svg>
-                Critical Alerts
-                <span id="alert-badge" class="notification-badge hidden">0</span>
-            </h2>
-            <button id="close-alert-btn" class="text-gray-500 hover:text-gray-700 text-xl font-bold">×</button>
-        </div>
-        
-        <div class="text-sm text-gray-600 mb-3 p-2 bg-red-50 rounded-lg border border-red-200">
-            <span class="inline-block w-3 h-3 rounded-full mr-2 bg-red-500"></span>
-            High S<sub>4C</sub> Levels Detected (> 0.4)
-        </div>
-        
-        <div id="alert-list" class="space-y-3 max-h-60 overflow-y-auto">
-            <div class="text-sm text-gray-500 italic text-center py-4">
-                Monitoring for critical S4C levels...
             </div>
         </div>
     </div>
@@ -134,7 +136,8 @@
         <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 Time Control
             </h3>
@@ -147,11 +150,11 @@
                 </button>
             </div>
         </div>
-        
+
         <div class="mb-2">
             <input type="range" id="time-slider" class="time-slider" min="0" max="100" value="0">
         </div>
-        
+
         <div class="flex justify-between text-xs text-gray-600">
             <span id="start-time" class="font-mono">Start</span>
             <span id="current-progress" class="font-semibold">0%</span>
@@ -170,4 +173,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="script.js"></script>
 </body>
+
 </html>

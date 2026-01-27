@@ -1,14 +1,19 @@
-FROM nginx:alpine
+FROM node:18-alpine
 
-# Create directory for dynamic data
-RUN mkdir -p /usr/share/nginx/html/data
+WORKDIR /app
 
-# Copy static files (excluding data.csv to avoid caching)
-COPY index.html script.js styles.css /usr/share/nginx/html/
+# Copy all files
+COPY index.html script.js styles.css /app/
+COPY *_S4C_last15min.csv /app/
 
-# Copy data.csv separately to enable dynamic updates
-COPY data.csv /usr/share/nginx/html/
+# Install a simple HTTP server
+RUN npm install -g http-server
 
-EXPOSE 80
+# Create a custom server config to disable caching for CSV files
+RUN echo '#!/bin/sh' > /app/start.sh && \
+    echo 'http-server -p 3000 -c-1 --cors' >> /app/start.sh && \
+    chmod +x /app/start.sh
 
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 3000
+
+CMD ["/app/start.sh"]
